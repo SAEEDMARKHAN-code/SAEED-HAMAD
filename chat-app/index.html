@@ -1,130 +1,271 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ollama Chat</title>
-  <meta name="description" content="Local AI chat powered by Ollama — runs entirely on your machine." />
+  <title>مرجعي — KnowledgeChat</title>
 
-  <!-- Highlight.js -->
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <!-- Mammoth.js (Word) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+  <!-- SheetJS (Excel) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- JSZip (PowerPoint) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <!-- Marked.js + Highlight.js -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <!-- Marked.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app">
 
-    <!-- ===== Sidebar ===== -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-title">Conversations</div>
-        <button class="btn-new-chat" id="new-chat-btn" title="New Chat">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          New Chat
-        </button>
+<!-- ═══════════════════════ SPLASH SCREEN ═══════════════════════ -->
+<div id="splash-screen">
+  <canvas id="splash-canvas"></canvas>
+  <div id="splash-overlay">
+    <div class="splash-logo">⚡</div>
+    <h1 class="splash-title">مرجعي</h1>
+    <p class="splash-subtitle">KnowledgeChat — دردشة ذكية مع مراجعك المحلية</p>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <p class="loading-text" id="loading-text">جاري التحميل...</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════ MAIN APP ═══════════════════════════ -->
+<div id="app" class="hidden">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-brand">⚡ مرجعي</span>
+      <button class="btn-icon" id="sidebar-toggle" title="إخفاء الشريط الجانبي">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+
+    <button class="btn-new-chat" id="new-chat-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      محادثة جديدة
+    </button>
+
+    <div class="sidebar-section-label">المحادثات</div>
+    <div class="sessions-list" id="sessions-list"></div>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">المراجع</div>
+    <button class="btn-add-ref" id="add-ref-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      إضافة مرجع
+    </button>
+    <input type="file" id="file-input" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.pptx,.ppt,.txt,.md" style="display:none" />
+    <div class="refs-sidebar-list" id="refs-sidebar-list"></div>
+
+    <div class="sidebar-footer">
+      <button class="btn-icon-text" id="settings-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        الإعدادات
+      </button>
+      <div class="ollama-status" id="ollama-status">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">يتحقق...</span>
       </div>
-      <div class="sessions-list" id="sessions-list">
-        <div class="sessions-empty">No chats yet</div>
-      </div>
-    </aside>
+    </div>
+  </aside>
 
-    <!-- Overlay for mobile -->
-    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-    <!-- ===== Main ===== -->
-    <main class="main">
+  <!-- ── Main Content ── -->
+  <main class="main-content">
 
-      <!-- Top Bar -->
-      <header class="topbar">
-        <button class="btn-sidebar-toggle" id="sidebar-toggle" title="Toggle Sidebar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
-        </button>
-
-        <span class="topbar-title" id="topbar-title">Ollama Chat</span>
-
-        <select class="model-selector" id="model-select" title="Select Model">
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="btn-icon" id="menu-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <span class="topbar-title" id="topbar-title">مرجعي</span>
+      <div class="topbar-right">
+        <select class="model-select" id="model-select">
           <option value="llama3.2">llama3.2</option>
           <option value="llama3.1">llama3.1</option>
           <option value="llama3">llama3</option>
           <option value="mistral">mistral</option>
-          <option value="mistral-nemo">mistral-nemo</option>
           <option value="gemma2">gemma2</option>
-          <option value="gemma2:2b">gemma2:2b</option>
           <option value="phi3">phi3</option>
-          <option value="phi3:mini">phi3:mini</option>
-          <option value="codellama">codellama</option>
-          <option value="codellama:13b">codellama:13b</option>
           <option value="deepseek-r1">deepseek-r1</option>
-          <option value="deepseek-coder">deepseek-coder</option>
           <option value="qwen2.5">qwen2.5</option>
-          <option value="qwen2.5-coder">qwen2.5-coder</option>
-          <option value="neural-chat">neural-chat</option>
-          <option value="starling-lm">starling-lm</option>
-          <option value="solar">solar</option>
-          <option value="dolphin-mistral">dolphin-mistral</option>
-          <option value="nous-hermes2">nous-hermes2</option>
         </select>
-
-        <div class="topbar-actions">
-          <button class="btn-icon" id="export-btn" title="Export conversation as .txt">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-          </button>
-        </div>
-      </header>
-
-      <!-- Chat Area -->
-      <div class="chat-area" id="chat-area">
-        <!-- Content rendered by JS -->
+        <button class="btn-icon" id="refs-panel-btn" title="المراجع">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span class="refs-badge" id="refs-badge" style="display:none">0</span>
+        </button>
+        <button class="btn-icon" id="export-btn" title="تصدير المحادثة">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
       </div>
+    </header>
 
-      <!-- Input Area -->
-      <div class="input-area">
-        <div class="input-wrapper">
-          <textarea
-            id="message-input"
-            placeholder="Type a message… (Shift+Enter for new line)"
-            rows="1"
-            autocomplete="off"
-            spellcheck="true"
-          ></textarea>
+    <!-- Drop Zone Overlay -->
+    <div class="drop-zone-overlay" id="drop-zone-overlay">
+      <div class="drop-zone-content">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <p>أفلت الملفات هنا لإضافتها كمراجع</p>
+        <span>PDF · Word · Excel · PowerPoint · TXT</span>
+      </div>
+    </div>
 
-          <button class="btn-send" id="send-btn" title="Send (Enter)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <line x1="22" y1="2" x2="11" y2="13"/>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-            </svg>
-          </button>
-
-          <button class="btn-stop" id="stop-btn" title="Stop generating" style="display:none">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <rect x="4" y="4" width="16" height="16" rx="2"/>
-            </svg>
-          </button>
-        </div>
-        <div class="input-hint">
-          Powered by <strong>Ollama</strong> — runs locally on your machine &nbsp;·&nbsp; Shift+Enter for new line
+    <!-- Chat Area -->
+    <div class="chat-area" id="chat-area">
+      <div class="chat-welcome" id="chat-welcome">
+        <div class="welcome-icon">⚡</div>
+        <h2>مرحباً بك في مرجعي</h2>
+        <p>أضف مراجعك وابدأ المحادثة. يمكنني الإجابة على أسئلتك بناءً على محتوى ملفاتك.</p>
+        <div class="welcome-tips">
+          <div class="tip">📄 أرفع ملفات PDF أو Word أو Excel أو PowerPoint</div>
+          <div class="tip">💬 اسألني عن محتوى مراجعك</div>
+          <div class="tip">🖼️ سأعرض الصور والمحتوى ذي الصلة</div>
+          <div class="tip">🔒 كل شيء يعمل محلياً على جهازك</div>
         </div>
       </div>
+    </div>
 
-    </main>
+    <!-- Input Area -->
+    <div class="input-area">
+      <div class="input-wrapper">
+        <button class="btn-attach" id="attach-btn" title="إرفاق ملف">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        </button>
+        <textarea id="message-input" placeholder="اكتب سؤالك هنا... (Shift+Enter للسطر الجديد)" rows="1"></textarea>
+        <button class="btn-send" id="send-btn" title="إرسال">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+        <button class="btn-stop hidden" id="stop-btn" title="إيقاف">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+        </button>
+      </div>
+      <div class="input-hint">مدعوم بـ Ollama — يعمل محلياً على جهازك · Shift+Enter للسطر الجديد</div>
+    </div>
+
+  </main>
+
+  <!-- ── References Panel ── -->
+  <div class="refs-panel hidden" id="refs-panel">
+    <div class="refs-panel-header">
+      <h3>المراجع</h3>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sm-accent" id="add-ref-panel-btn">+ إضافة</button>
+        <button class="btn-icon" id="close-refs-panel">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="refs-list" id="refs-list">
+      <div class="refs-empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <p>لا توجد مراجع بعد</p>
+        <small>أضف ملفات PDF أو Word أو Excel أو PowerPoint</small>
+      </div>
+    </div>
   </div>
 
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
+</div>
 
-  <script src="app.js"></script>
+<!-- ═══════════════════ MODALS ═══════════════════════════════════ -->
+
+<!-- Settings Modal -->
+<div class="modal-overlay hidden" id="settings-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>الإعدادات</h3>
+      <button class="btn-icon" id="close-settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>رابط Ollama</label>
+        <input type="text" id="ollama-url-input" placeholder="http://localhost:11434" />
+      </div>
+      <div class="form-group">
+        <label>النموذج الافتراضي</label>
+        <select id="default-model-select">
+          <option value="llama3.2">llama3.2</option>
+          <option value="llama3.1">llama3.1</option>
+          <option value="mistral">mistral</option>
+          <option value="gemma2">gemma2</option>
+          <option value="phi3">phi3</option>
+          <option value="qwen2.5">qwen2.5</option>
+          <option value="deepseek-r1">deepseek-r1</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>عدد القطع للسياق (Top K)</label>
+        <input type="number" id="topk-input" min="1" max="10" value="4" />
+      </div>
+      <div class="form-group">
+        <label>النماذج المتاحة على Ollama</label>
+        <div id="available-models" class="models-chips">جاري الفحص...</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" id="save-settings-btn">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Image Viewer Modal -->
+<div class="modal-overlay hidden" id="image-modal">
+  <div class="modal modal-image">
+    <button class="btn-icon modal-close-abs" id="close-image-modal">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <img id="image-modal-img" src="" alt="" />
+    <p id="image-modal-caption"></p>
+  </div>
+</div>
+
+<!-- Ref Preview Modal -->
+<div class="modal-overlay hidden" id="preview-modal">
+  <div class="modal modal-preview">
+    <div class="modal-header">
+      <h3 id="preview-modal-title">معاينة المرجع</h3>
+      <button class="btn-icon" id="close-preview-modal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-tab="text">النص المستخرج</button>
+      <button class="modal-tab" data-tab="images">الصور</button>
+    </div>
+    <div class="modal-body modal-preview-body">
+      <div class="tab-content active" id="preview-text-tab"></div>
+      <div class="tab-content" id="preview-images-tab"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Scripts -->
+<script src="processor.js"></script>
+<script src="splash.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
