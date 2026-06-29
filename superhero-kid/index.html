@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Superhero Kid!</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d0d2b;
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Stars background ── */
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .star {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle var(--d, 3s) ease-in-out infinite alternate;
+    }
+    @keyframes twinkle { from { opacity: 0.2; } to { opacity: 1; } }
+
+    /* ── Layout ── */
+    .page { position: relative; z-index: 1; }
+
+    /* ── Hero header ── */
+    header {
+      text-align: center;
+      padding: 3rem 1rem 2rem;
+    }
+    .logo {
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-weight: 900;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, #ffe600, #ff4d00, #ff006e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 20px rgba(255,230,0,.5));
+      animation: pulse 2.5s ease-in-out infinite alternate;
+    }
+    @keyframes pulse {
+      from { filter: drop-shadow(0 0 10px rgba(255,230,0,.3)); }
+      to   { filter: drop-shadow(0 0 30px rgba(255,230,0,.8)); }
+    }
+    .tagline {
+      margin-top: .75rem;
+      font-size: clamp(1rem, 3vw, 1.4rem);
+      color: #b0c4ff;
+    }
+
+    /* ── Section titles ── */
+    .section { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #ffe600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1.25rem;
+    }
+
+    /* ── Hero cards ── */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+    .hero-card {
+      background: rgba(255,255,255,.06);
+      border: 2px solid transparent;
+      border-radius: 16px;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: transform .2s, border-color .2s, background .2s;
+      user-select: none;
+    }
+    .hero-card:hover {
+      transform: translateY(-6px) scale(1.04);
+      border-color: rgba(255,230,0,.6);
+      background: rgba(255,255,255,.1);
+    }
+    .hero-card.selected {
+      border-color: #ffe600;
+      background: rgba(255,230,0,.15);
+      transform: translateY(-6px) scale(1.06);
+    }
+    .hero-icon { font-size: 3.5rem; margin-bottom: .5rem; }
+    .hero-name { font-size: .95rem; font-weight: 700; color: #e0e8ff; }
+    .hero-power { font-size: .78rem; color: #8899cc; margin-top: .25rem; }
+
+    /* ── Name generator ── */
+    .name-gen {
+      background: rgba(255,255,255,.05);
+      border-radius: 20px;
+      padding: 2rem;
+      text-align: center;
+    }
+    .name-inputs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+    .name-inputs input {
+      flex: 1 1 180px;
+      max-width: 260px;
+      padding: .75rem 1rem;
+      border-radius: 10px;
+      border: 2px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .name-inputs input::placeholder { color: #667; }
+    .name-inputs input:focus { border-color: #ffe600; }
+    .btn-generate {
+      display: inline-block;
+      padding: .85rem 2.5rem;
+      background: linear-gradient(135deg, #ffe600, #ff4d00);
+      color: #0d0d2b;
+      font-size: 1.1rem;
+      font-weight: 800;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      letter-spacing: .5px;
+    }
+    .btn-generate:hover {
+      transform: scale(1.06);
+      box-shadow: 0 6px 24px rgba(255,200,0,.4);
+    }
+    .btn-generate:active { transform: scale(.98); }
+
+    .hero-result {
+      margin-top: 1.5rem;
+      display: none;
+      animation: popIn .4s cubic-bezier(.22,1.8,.6,1);
+    }
+    .hero-result.show { display: block; }
+    @keyframes popIn {
+      from { opacity:0; transform: scale(.7); }
+      to   { opacity:1; transform: scale(1); }
+    }
+    .result-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #1a1a4e, #2d006e);
+      border: 3px solid #ffe600;
+      border-radius: 20px;
+      padding: 1.5rem 2rem;
+    }
+    .result-emoji { font-size: 4rem; }
+    .result-name {
+      font-size: clamp(1.5rem, 4vw, 2.2rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, #ffe600, #ff006e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: .5rem 0;
+    }
+    .result-desc { font-size: .95rem; color: #b0c4ff; }
+
+    /* ── Powers quiz ── */
+    .quiz-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: .75rem;
+    }
+    .quiz-option {
+      background: rgba(255,255,255,.06);
+      border: 2px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      font-size: .95rem;
+      transition: all .2s;
+    }
+    .quiz-option:hover { background: rgba(255,255,255,.12); border-color: #ffe600; }
+    .quiz-option.chosen { background: rgba(255,230,0,.15); border-color: #ffe600; }
+    .quiz-option .q-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .quiz-result-bar {
+      margin-top: 1.5rem;
+      display: none;
+      background: rgba(255,255,255,.05);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+    }
+    .quiz-result-bar.show { display: block; }
+    .power-label { font-size: 1.1rem; font-weight: 700; color: #ffe600; margin-bottom: .5rem; }
+    .power-bar-wrap { background: rgba(255,255,255,.1); border-radius: 50px; height: 14px; overflow: hidden; }
+    .power-bar { height: 100%; border-radius: 50px; transition: width 1s ease; width: 0; }
+
+    /* ── Mission card ── */
+    .mission-card {
+      background: linear-gradient(135deg, rgba(80,0,200,.3), rgba(0,80,200,.3));
+      border: 2px solid rgba(120,80,255,.5);
+      border-radius: 20px;
+      padding: 2rem;
+      text-align: center;
+    }
+    .mission-emoji { font-size: 3rem; margin-bottom: .75rem; }
+    .mission-text { font-size: 1.15rem; color: #d0dbff; line-height: 1.6; }
+    .btn-new-mission {
+      margin-top: 1.25rem;
+      padding: .65rem 1.8rem;
+      background: rgba(255,255,255,.1);
+      border: 2px solid rgba(255,255,255,.25);
+      color: #fff;
+      border-radius: 50px;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s, transform .15s;
+    }
+    .btn-new-mission:hover { background: rgba(255,255,255,.18); transform: scale(1.04); }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2.5rem 1rem 3rem;
+      color: #445;
+      font-size: .85rem;
+    }
+
+    /* ── Confetti burst (CSS only) ── */
+    .confetti-wrap {
+      position: fixed; inset: 0; pointer-events: none; z-index: 999;
+      display: none;
+    }
+    .confetti-wrap.burst { display: block; }
+    .confetti-piece {
+      position: absolute;
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      animation: fall 1.2s ease-in forwards;
+    }
+    @keyframes fall {
+      from { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      to   { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Stars -->
+<div class="stars" id="stars"></div>
+
+<div class="confetti-wrap" id="confetti"></div>
+
+<div class="page">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">⚡ Superhero Kid! ⚡</div>
+    <p class="tagline">Discover your powers · Build your hero · Save the day!</p>
+  </header>
+
+  <!-- 1. Choose your hero -->
+  <section class="section">
+    <div class="section-title">🦸 Choose Your Hero</div>
+    <div class="hero-grid" id="hero-grid"></div>
+  </section>
+
+  <!-- 2. Hero name generator -->
+  <section class="section">
+    <div class="section-title">✨ Create Your Hero Name</div>
+    <div class="name-gen">
+      <div class="name-inputs">
+        <input type="text" id="first-name" placeholder="Your first name" maxlength="20" />
+        <input type="text" id="fav-color" placeholder="Favourite colour" maxlength="20" />
+      </div>
+      <button class="btn-generate" id="gen-btn">Generate My Hero Name!</button>
+      <div class="hero-result" id="hero-result">
+        <div class="result-badge">
+          <div class="result-emoji" id="result-emoji">⚡</div>
+          <div class="result-name" id="result-name"></div>
+          <div class="result-desc" id="result-desc"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Superpower quiz -->
+  <section class="section">
+    <div class="section-title">🔬 What's Your Superpower?</div>
+    <div class="quiz-options" id="quiz-options"></div>
+    <div class="quiz-result-bar" id="quiz-result"></div>
+  </section>
+
+  <!-- 4. Daily mission -->
+  <section class="section">
+    <div class="section-title">📋 Today's Hero Mission</div>
+    <div class="mission-card">
+      <div class="mission-emoji" id="mission-emoji">🌟</div>
+      <p class="mission-text" id="mission-text"></p>
+      <button class="btn-new-mission" id="mission-btn">New Mission!</button>
+    </div>
+  </section>
+
+  <footer>Made with ❤️ for every little hero out there · Superhero Kid 2025</footer>
+</div>
+
+<script>
+  // ── Stars ──────────────────────────────────────────────
+  (function() {
+    const wrap = document.getElementById('stars');
+    for (let i = 0; i < 120; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      const size = Math.random() * 2.5 + .5;
+      s.style.cssText = `
+        width:${size}px; height:${size}px;
+        top:${Math.random()*100}%; left:${Math.random()*100}%;
+        --d:${(Math.random()*3+1.5).toFixed(1)}s;
+        animation-delay:${(Math.random()*3).toFixed(1)}s;
+      `;
+      wrap.appendChild(s);
+    }
+  })();
+
+  // ── Hero data ──────────────────────────────────────────
+  const HEROES = [
+    { icon:'🦸‍♂️', name:'Captain Courage', power:'Super Strength' },
+    { icon:'🦸‍♀️', name:'Shadow Spark',    power:'Invisibility' },
+    { icon:'⚡',    name:'Bolt Kid',         power:'Super Speed' },
+    { icon:'🧊',    name:'Frost Nova',       power:'Ice Control' },
+    { icon:'🔥',    name:'Blaze Phoenix',    power:'Fire Mastery' },
+    { icon:'🌊',    name:'Aqua Storm',       power:'Water Powers' },
+    { icon:'🌪️',   name:'Whirlwind',        power:'Wind Control' },
+    { icon:'🌟',    name:'Star Guardian',    power:'Light Magic' },
+    { icon:'🦅',    name:'Sky Falcon',       power:'Flight' },
+    { icon:'🧠',    name:'Mind Master',      power:'Telepathy' },
+    { icon:'🌿',    name:'Nature Force',     power:'Plant Control' },
+    { icon:'⚙️',   name:'Tech Titan',       power:'Gadget Genius' },
+  ];
+
+  const grid = document.getElementById('hero-grid');
+  let selectedHero = null;
+
+  HEROES.forEach((h, i) => {
+    const card = document.createElement('div');
+    card.className = 'hero-card';
+    card.innerHTML = `<div class="hero-icon">${h.icon}</div>
+      <div class="hero-name">${h.name}</div>
+      <div class="hero-power">${h.power}</div>`;
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.hero-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedHero = h;
+    });
+    grid.appendChild(card);
+  });
+
+  // ── Name Generator ─────────────────────────────────────
+  const PREFIXES = ['Ultra','Super','Mega','Hyper','Cosmic','Shadow','Turbo','Stealth','Blazing','Mighty'];
+  const SUFFIXES = ['Knight','Guardian','Blaster','Striker','Ranger','Phoenix','Titan','Bolt','Storm','Wing'];
+  const COLORS   = {
+    red:'Crimson', blue:'Azure', green:'Emerald', purple:'Violet', yellow:'Golden',
+    orange:'Solar', pink:'Rose', black:'Shadow', white:'Ivory', gold:'Aureate',
+  };
+
+  document.getElementById('gen-btn').addEventListener('click', () => {
+    const firstName = document.getElementById('first-name').value.trim();
+    const color     = document.getElementById('fav-color').value.trim().toLowerCase();
+
+    const prefix = PREFIXES[Math.floor(Math.random() * PREFIXES.length)];
+    const suffix = SUFFIXES[Math.floor(Math.random() * SUFFIXES.length)];
+    const colorWord = COLORS[color] || (color ? color.charAt(0).toUpperCase() + color.slice(1) : 'Cosmic');
+
+    const heroName = `${colorWord} ${prefix} ${suffix}`;
+    const emoji = selectedHero ? selectedHero.icon : '⚡';
+    const power = selectedHero ? selectedHero.power : 'Amazing Powers';
+    const greeting = firstName ? `, ${firstName}` : '';
+
+    document.getElementById('result-emoji').textContent = emoji;
+    document.getElementById('result-name').textContent  = heroName;
+    document.getElementById('result-desc').textContent  =
+      `Your hero name is revealed${greeting}! You wield the power of ${power}. The city needs you!`;
+
+    const result = document.getElementById('hero-result');
+    result.classList.remove('show');
+    void result.offsetWidth;
+    result.classList.add('show');
+    spawnConfetti();
+  });
+
+  // ── Quiz ───────────────────────────────────────────────
+  const POWERS = [
+    { icon:'💪', label:'Super Strength',  desc:'You lift cars and protect the weak!',          color:'#ff4d00', pct:95 },
+    { icon:'🏃', label:'Super Speed',     desc:'You outrun lightning and are always on time!',  color:'#ffe600', pct:90 },
+    { icon:'🧠', label:'Mind Powers',     desc:'You read minds and move objects with thought!', color:'#7b2fff', pct:85 },
+    { icon:'🛡️', label:'Force Field',    desc:'Nothing gets past your invisible shield!',      color:'#00c8ff', pct:88 },
+    { icon:'🔥', label:'Elemental Fire', desc:'You command the flames and light the darkness!', color:'#ff006e', pct:92 },
+    { icon:'🦅', label:'Flight',          desc:'The sky is your playground!',                   color:'#00ff9f', pct:80 },
+    { icon:'🌊', label:'Water Control',  desc:'Oceans bow to your command!',                   color:'#0080ff', pct:87 },
+    { icon:'⚡', label:'Electricity',     desc:'You strike with the power of a thunderstorm!',  color:'#fffb00', pct:93 },
+  ];
+
+  const quizWrap = document.getElementById('quiz-options');
+  const quizResult = document.getElementById('quiz-result');
+
+  POWERS.forEach(p => {
+    const opt = document.createElement('div');
+    opt.className = 'quiz-option';
+    opt.innerHTML = `<span class="q-icon">${p.icon}</span><span>${p.label}</span>`;
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('chosen'));
+      opt.classList.add('chosen');
+      showPowerResult(p);
+    });
+    quizWrap.appendChild(opt);
+  });
+
+  function showPowerResult(p) {
+    quizResult.innerHTML = `
+      <div class="power-label">${p.icon} ${p.label} — ${p.desc}</div>
+      <div class="power-bar-wrap">
+        <div class="power-bar" id="pbar" style="background:${p.color}"></div>
+      </div>`;
+    quizResult.classList.remove('show');
+    void quizResult.offsetWidth;
+    quizResult.classList.add('show');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById('pbar').style.width = p.pct + '%';
+      });
+    });
+  }
+
+  // ── Missions ───────────────────────────────────────────
+  const MISSIONS = [
+    { emoji:'🐶', text:'Help a neighbour walk their dog and make their day brighter!' },
+    { emoji:'📚', text:'Read a book for 20 minutes — knowledge is a superpower!' },
+    { emoji:'🧹', text:'Tidy your room without being asked. Heroes keep their base clean!' },
+    { emoji:'🌱', text:'Water a plant or help with the garden. Nature needs heroes too!' },
+    { emoji:'😄', text:'Make someone smile today. Kindness is the most powerful ability!' },
+    { emoji:'♻️', text:'Sort the recycling and save the planet one bottle at a time!' },
+    { emoji:'🍎', text:'Eat a healthy snack — every hero needs to fuel their powers!' },
+    { emoji:'📞', text:'Call or message a grandparent. That makes you an extra hero!' },
+    { emoji:'🚿', text:'Drink 6 glasses of water today. Super-hydration activates your powers!' },
+    { emoji:'🤝', text:'Say something kind to a classmate or friend. Words have power!' },
+    { emoji:'🎨', text:'Draw your superhero and share it with your family!' },
+    { emoji:'💤', text:'Go to bed on time tonight. Even heroes need their rest!' },
+  ];
+
+  function showMission() {
+    const m = MISSIONS[Math.floor(Math.random() * MISSIONS.length)];
+    document.getElementById('mission-emoji').textContent = m.emoji;
+    document.getElementById('mission-text').textContent  = m.text;
+  }
+  showMission();
+  document.getElementById('mission-btn').addEventListener('click', showMission);
+
+  // ── Confetti ───────────────────────────────────────────
+  const CONF_COLORS = ['#ffe600','#ff4d00','#ff006e','#7b2fff','#00c8ff','#00ff9f'];
+
+  function spawnConfetti() {
+    const wrap = document.getElementById('confetti');
+    wrap.innerHTML = '';
+    wrap.classList.add('burst');
+    for (let i = 0; i < 60; i++) {
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      p.style.cssText = `
+        left:${Math.random()*100}%;
+        top:0;
+        background:${CONF_COLORS[Math.floor(Math.random()*CONF_COLORS.length)]};
+        animation-delay:${(Math.random()*.6).toFixed(2)}s;
+        animation-duration:${(Math.random()*.6+.9).toFixed(2)}s;
+        width:${Math.random()*8+6}px;
+        height:${Math.random()*8+6}px;
+        border-radius:${Math.random()>0.5?'50%':'2px'};
+      `;
+      wrap.appendChild(p);
+    }
+    setTimeout(() => wrap.classList.remove('burst'), 2000);
+  }
+</script>
+</body>
+</html>
