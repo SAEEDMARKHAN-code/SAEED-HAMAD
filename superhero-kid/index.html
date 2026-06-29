@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>طفل بطل خارق!</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 50% 0%, #1a0a3d 0%, #0a0520 40%, #000510 100%);
+      font-family: 'Arial Black', Arial, sans-serif;
+    }
+
+    /* ===== TITLE ===== */
+    .title {
+      position: absolute;
+      top: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900;
+      color: #ffe000;
+      text-shadow:
+        0 0 10px #ffe000,
+        0 0 30px #ffaa00,
+        0 0 60px #ff6600,
+        2px 2px 0 #cc4400;
+      letter-spacing: 4px;
+      white-space: nowrap;
+      animation: titlePulse 2s ease-in-out infinite alternate;
+      z-index: 100;
+    }
+
+    @keyframes titlePulse {
+      0%   { text-shadow: 0 0 10px #ffe000, 0 0 30px #ffaa00, 0 0 60px #ff6600, 2px 2px 0 #cc4400; transform: translateX(-50%) scale(1); }
+      100% { text-shadow: 0 0 20px #fff, 0 0 50px #ffe000, 0 0 100px #ffaa00, 0 0 140px #ff6600, 2px 2px 0 #cc4400; transform: translateX(-50%) scale(1.06); }
+    }
+
+    /* ===== MOON ===== */
+    .moon {
+      position: absolute;
+      top: 80px;
+      right: 12%;
+      width: 90px;
+      height: 90px;
+      background: radial-gradient(circle at 35% 35%, #fffde7, #ffd54f);
+      border-radius: 50%;
+      box-shadow: 0 0 30px 10px rgba(255, 220, 80, 0.4), 0 0 60px 20px rgba(255, 200, 40, 0.2);
+      animation: moonGlow 4s ease-in-out infinite alternate;
+      z-index: 2;
+    }
+    .moon::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 18px;
+      width: 55px; height: 55px;
+      background: rgba(255,255,220,0.18);
+      border-radius: 50%;
+    }
+
+    @keyframes moonGlow {
+      0%   { box-shadow: 0 0 30px 10px rgba(255,220,80,0.4), 0 0 60px 20px rgba(255,200,40,0.2); }
+      100% { box-shadow: 0 0 50px 20px rgba(255,230,100,0.6), 0 0 100px 40px rgba(255,210,60,0.35); }
+    }
+
+    /* ===== TWINKLING STARS ===== */
+    .stars-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .star-dot {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle var(--dur, 3s) ease-in-out var(--delay, 0s) infinite alternate;
+    }
+    @keyframes twinkle {
+      0%   { opacity: 0.1; transform: scale(0.6); }
+      100% { opacity: 1;   transform: scale(1.4); }
+    }
+
+    /* ===== CITY SKYLINE ===== */
+    .skyline {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 200px;
+      z-index: 3;
+    }
+
+    /* ===== HERO WRAPPER (flies across screen) ===== */
+    .hero-wrapper {
+      position: absolute;
+      top: 38%;
+      left: 0;
+      z-index: 10;
+      animation: flyAcross 5s linear infinite;
+      transform: translateY(-50%);
+    }
+
+    @keyframes flyAcross {
+      0%   { left: -220px;  top: 42%; }
+      30%  { top: 35%; }
+      60%  { top: 40%; }
+      80%  { top: 33%; }
+      100% { left: calc(100vw + 220px); top: 38%; }
+    }
+
+    /* ===== SPEED LINES ===== */
+    .speed-lines {
+      position: absolute;
+      top: 50%;
+      right: 130px;
+      transform: translateY(-50%);
+      width: 180px;
+      height: 60px;
+      z-index: 9;
+      pointer-events: none;
+    }
+    .speed-line {
+      position: absolute;
+      height: 2px;
+      background: linear-gradient(to left, rgba(255,255,255,0), rgba(255,255,255,0.8));
+      border-radius: 2px;
+      animation: speedPulse 0.3s ease-in-out infinite alternate;
+    }
+    .speed-line:nth-child(1)  { top: 10%; width: 170px; animation-delay: 0s; }
+    .speed-line:nth-child(2)  { top: 25%; width: 140px; animation-delay: 0.05s; }
+    .speed-line:nth-child(3)  { top: 40%; width: 180px; animation-delay: 0.10s; }
+    .speed-line:nth-child(4)  { top: 55%; width: 120px; animation-delay: 0.15s; }
+    .speed-line:nth-child(5)  { top: 70%; width: 160px; animation-delay: 0.20s; }
+    .speed-line:nth-child(6)  { top: 85%; width: 100px; animation-delay: 0.25s; }
+
+    @keyframes speedPulse {
+      0%   { opacity: 0.4; transform: scaleX(0.85); }
+      100% { opacity: 1;   transform: scaleX(1); }
+    }
+
+    /* ===== SPARKLE TRAIL ===== */
+    .sparkle-trail {
+      position: absolute;
+      top: 50%;
+      right: 90px;
+      transform: translateY(-50%);
+      width: 220px;
+      height: 80px;
+      pointer-events: none;
+      z-index: 8;
+    }
+    .sparkle {
+      position: absolute;
+      width: var(--size, 10px);
+      height: var(--size, 10px);
+      background: var(--color, #ffe000);
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      animation: sparkleAnim var(--dur, 0.8s) ease-out var(--delay, 0s) infinite;
+    }
+    @keyframes sparkleAnim {
+      0%   { opacity: 1;   transform: scale(1) rotate(0deg); }
+      100% { opacity: 0;   transform: scale(0) rotate(180deg); }
+    }
+
+    /* ===== THE KID CHARACTER ===== */
+    .hero {
+      position: relative;
+      width: 120px;
+      height: 160px;
+    }
+
+    /* --- HEAD --- */
+    .head {
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 52px;
+      height: 54px;
+      background: #f5c07a;
+      border-radius: 50% 50% 45% 45%;
+      z-index: 5;
+      box-shadow: inset -4px -4px 8px rgba(0,0,0,0.15);
+    }
+
+    /* hair */
+    .head::before {
+      content: '';
+      position: absolute;
+      top: -8px; left: 4px;
+      width: 44px; height: 22px;
+      background: #3d1c02;
+      border-radius: 50% 50% 0 0;
+    }
+
+    /* ear left */
+    .ear-left {
+      position: absolute;
+      top: 14px; left: -6px;
+      width: 12px; height: 14px;
+      background: #f5c07a;
+      border-radius: 50%;
+      z-index: 4;
+    }
+    /* ear right */
+    .ear-right {
+      position: absolute;
+      top: 14px; right: -6px;
+      width: 12px; height: 14px;
+      background: #f5c07a;
+      border-radius: 50%;
+      z-index: 4;
+    }
+
+    /* mask */
+    .mask {
+      position: absolute;
+      top: 16px; left: 4px;
+      width: 44px; height: 16px;
+      background: #cc0000;
+      border-radius: 4px 4px 6px 6px;
+      z-index: 6;
+    }
+    /* mask eye holes */
+    .mask::before, .mask::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      width: 11px; height: 9px;
+      background: #fff;
+      border-radius: 50%;
+    }
+    .mask::before { left: 5px; }
+    .mask::after  { right: 5px; }
+
+    /* pupils */
+    .pupil-left, .pupil-right {
+      position: absolute;
+      top: 20px;
+      width: 5px; height: 5px;
+      background: #222;
+      border-radius: 50%;
+      z-index: 7;
+    }
+    .pupil-left  { left: 11px; }
+    .pupil-right { right: 11px; }
+
+    /* mouth */
+    .mouth {
+      position: absolute;
+      bottom: 10px; left: 50%;
+      transform: translateX(-50%);
+      width: 18px; height: 8px;
+      border-bottom: 3px solid #c07050;
+      border-radius: 0 0 10px 10px;
+      z-index: 7;
+    }
+
+    /* cheeks */
+    .cheek-left, .cheek-right {
+      position: absolute;
+      bottom: 14px;
+      width: 10px; height: 6px;
+      background: rgba(255,100,100,0.35);
+      border-radius: 50%;
+      z-index: 7;
+    }
+    .cheek-left  { left: 5px; }
+    .cheek-right { right: 5px; }
+
+    /* --- BODY / TORSO --- */
+    .body {
+      position: absolute;
+      top: 50px; left: 50%;
+      transform: translateX(-50%);
+      width: 56px; height: 60px;
+      background: #cc0000;
+      border-radius: 8px 8px 12px 12px;
+      z-index: 4;
+      box-shadow: inset -5px -5px 10px rgba(0,0,0,0.2);
+    }
+
+    /* S logo */
+    .logo {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 22px;
+      font-weight: 900;
+      color: #ffe000;
+      text-shadow: 0 0 8px #ffaa00, 1px 1px 0 #cc8800;
+      z-index: 6;
+      font-family: 'Arial Black', Arial, sans-serif;
+      animation: logoPulse 1.5s ease-in-out infinite alternate;
+    }
+    @keyframes logoPulse {
+      0%   { text-shadow: 0 0 8px #ffaa00; }
+      100% { text-shadow: 0 0 16px #fff, 0 0 30px #ffe000; }
+    }
+
+    /* belt */
+    .belt {
+      position: absolute;
+      bottom: 8px; left: 0;
+      width: 100%; height: 10px;
+      background: #ffe000;
+      border-radius: 3px;
+      z-index: 5;
+    }
+    .belt::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 14px; height: 14px;
+      background: #ffa000;
+      border-radius: 3px;
+      box-shadow: 0 0 6px #ffe000;
+    }
+
+    /* --- CAPE --- */
+    .cape {
+      position: absolute;
+      top: 52px; left: 50%;
+      transform-origin: top center;
+      transform: translateX(-30%);
+      width: 70px; height: 80px;
+      background: linear-gradient(160deg, #dd0000 60%, #990000);
+      border-radius: 0 0 40% 40% / 0 0 60% 40%;
+      z-index: 3;
+      animation: capeWave 0.5s ease-in-out infinite alternate;
+      box-shadow: inset -8px 0 16px rgba(0,0,0,0.25);
+    }
+    .cape::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 30px; height: 100%;
+      background: linear-gradient(160deg, rgba(255,80,80,0.3) 0%, transparent 70%);
+      border-radius: 0 0 40% 40%;
+    }
+
+    @keyframes capeWave {
+      0%   { transform: translateX(-30%) skewY(-8deg)  scaleX(0.9); border-radius: 0 0 40% 55% / 0 0 60% 50%; }
+      100% { transform: translateX(-30%) skewY(4deg)   scaleX(1.08); border-radius: 0 0 55% 30% / 0 0 50% 60%; }
+    }
+
+    /* --- EXTENDED FIST (right arm forward) --- */
+    .arm-front {
+      position: absolute;
+      top: 58px; left: -28px;
+      width: 42px; height: 14px;
+      background: #cc0000;
+      border-radius: 8px;
+      z-index: 6;
+    }
+    /* fist */
+    .fist {
+      position: absolute;
+      top: -2px; left: -16px;
+      width: 20px; height: 18px;
+      background: #f5c07a;
+      border-radius: 6px 8px 8px 6px;
+      z-index: 7;
+      box-shadow: inset -2px -2px 4px rgba(0,0,0,0.2);
+    }
+    /* knuckle lines */
+    .fist::before {
+      content: '';
+      position: absolute;
+      top: 5px; left: 3px;
+      width: 12px; height: 2px;
+      background: rgba(0,0,0,0.15);
+      border-radius: 2px;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+    }
+
+    /* --- BACK ARM --- */
+    .arm-back {
+      position: absolute;
+      top: 66px; right: -10px;
+      width: 26px; height: 12px;
+      background: #aa0000;
+      border-radius: 6px;
+      z-index: 3;
+      transform: rotate(20deg);
+    }
+
+    /* --- LEGS --- */
+    .legs {
+      position: absolute;
+      top: 106px; left: 50%;
+      transform: translateX(-50%);
+      width: 56px; height: 40px;
+      z-index: 4;
+    }
+    .leg {
+      position: absolute;
+      top: 0;
+      width: 22px; height: 38px;
+      background: #1a1a8c;
+      border-radius: 4px 4px 0 0;
+    }
+    .leg.left  { left: 2px; transform: rotate(-8deg); }
+    .leg.right { right: 2px; transform: rotate(8deg); }
+
+    /* boots */
+    .boot {
+      position: absolute;
+      bottom: -10px;
+      width: 26px; height: 16px;
+      background: #cc0000;
+      border-radius: 4px 10px 10px 4px;
+    }
+    .leg.left  .boot { left: -2px; }
+    .leg.right .boot { right: -2px; border-radius: 10px 4px 4px 10px; }
+
+    /* boot trim */
+    .boot::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 4px;
+      background: #ffe000;
+      border-radius: 4px 4px 0 0;
+    }
+
+    /* ===== CITY SKYLINE SVG ===== */
+    .skyline svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ===== CLOUD (decorative) ===== */
+    .cloud {
+      position: absolute;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50px;
+      z-index: 2;
+      animation: cloudDrift linear infinite;
+    }
+    .cloud::before, .cloud::after {
+      content: '';
+      position: absolute;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+
+    @keyframes cloudDrift {
+      0%   { transform: translateX(-120%); }
+      100% { transform: translateX(110vw); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TITLE -->
+  <div class="title">طفل بطل خارق!</div>
+
+  <!-- MOON -->
+  <div class="moon"></div>
+
+  <!-- TWINKLING STARS BACKGROUND -->
+  <div class="stars-bg" id="starsBg"></div>
+
+  <!-- CLOUDS -->
+  <div class="cloud" style="top:22%;left:-200px;width:140px;height:32px;animation-duration:28s;animation-delay:-5s;">
+    <div style="position:absolute;top:-18px;left:20px;width:55px;height:55px;background:rgba(255,255,255,0.05);border-radius:50%;"></div>
+    <div style="position:absolute;top:-28px;left:55px;width:70px;height:70px;background:rgba(255,255,255,0.05);border-radius:50%;"></div>
+  </div>
+  <div class="cloud" style="top:15%;left:-200px;width:100px;height:22px;animation-duration:38s;animation-delay:-15s;">
+    <div style="position:absolute;top:-12px;left:10px;width:40px;height:40px;background:rgba(255,255,255,0.04);border-radius:50%;"></div>
+    <div style="position:absolute;top:-18px;left:38px;width:50px;height:50px;background:rgba(255,255,255,0.04);border-radius:50%;"></div>
+  </div>
+
+  <!-- HERO (flies across screen) -->
+  <div class="hero-wrapper">
+
+    <!-- SPEED LINES -->
+    <div class="speed-lines">
+      <div class="speed-line"></div>
+      <div class="speed-line"></div>
+      <div class="speed-line"></div>
+      <div class="speed-line"></div>
+      <div class="speed-line"></div>
+      <div class="speed-line"></div>
+    </div>
+
+    <!-- SPARKLE TRAIL -->
+    <div class="sparkle-trail" id="sparkleTrail"></div>
+
+    <!-- CHARACTER -->
+    <div class="hero">
+      <!-- CAPE (behind body) -->
+      <div class="cape"></div>
+
+      <!-- BACK ARM -->
+      <div class="arm-back"></div>
+
+      <!-- BODY -->
+      <div class="body">
+        <div class="logo">S</div>
+        <div class="belt"></div>
+      </div>
+
+      <!-- HEAD -->
+      <div class="head">
+        <div class="ear-left"></div>
+        <div class="ear-right"></div>
+        <div class="mask"></div>
+        <div class="pupil-left"></div>
+        <div class="pupil-right"></div>
+        <div class="mouth"></div>
+        <div class="cheek-left"></div>
+        <div class="cheek-right"></div>
+      </div>
+
+      <!-- FRONT ARM + FIST -->
+      <div class="arm-front">
+        <div class="fist"></div>
+      </div>
+
+      <!-- LEGS -->
+      <div class="legs">
+        <div class="leg left"><div class="boot"></div></div>
+        <div class="leg right"><div class="boot"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CITY SKYLINE -->
+  <div class="skyline">
+    <svg viewBox="0 0 1440 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="skylineGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0d0b2b"/>
+          <stop offset="100%" stop-color="#050310"/>
+        </linearGradient>
+      </defs>
+      <!-- buildings -->
+      <g fill="url(#skylineGrad)" stroke="#1a1560" stroke-width="0.5">
+        <!-- left cluster -->
+        <rect x="0"   y="120" width="50"  height="80"/>
+        <rect x="18"  y="90"  width="20"  height="30"/>
+        <rect x="28"  y="70"  width="4"   height="25"/>
+        <rect x="50"  y="100" width="70"  height="100"/>
+        <rect x="75"  y="75"  width="18"  height="28"/>
+        <rect x="120" y="130" width="40"  height="70"/>
+        <rect x="135" y="110" width="10"  height="22"/>
+        <rect x="160" y="80"  width="55"  height="120"/>
+        <rect x="180" y="55"  width="16"  height="28"/>
+        <rect x="183" y="40"  width="10"  height="18"/>
+        <rect x="187" y="28"  width="2"   height="14"/>
+        <rect x="215" y="115" width="35"  height="85"/>
+        <rect x="250" y="95"  width="50"  height="105"/>
+        <rect x="268" y="72"  width="14"  height="25"/>
+        <!-- windows on tall building -->
+        <rect x="165" y="90"  width="6"   height="5"  fill="#ffe06622"/>
+        <rect x="175" y="90"  width="6"   height="5"  fill="#ffe06644"/>
+        <rect x="185" y="90"  width="6"   height="5"  fill="#ffe06622"/>
+        <rect x="165" y="100" width="6"   height="5"  fill="#ffe06633"/>
+        <rect x="185" y="100" width="6"   height="5"  fill="#ffe06655"/>
+        <rect x="165" y="110" width="6"   height="5"  fill="#ffe06622"/>
+        <rect x="175" y="110" width="6"   height="5"  fill="#ffe06633"/>
+        <!-- middle cluster -->
+        <rect x="300" y="140" width="60"  height="60"/>
+        <rect x="360" y="60"  width="80"  height="140"/>
+        <rect x="385" y="35"  width="28"  height="28"/>
+        <rect x="397" y="18"  width="4"   height="20"/>
+        <rect x="440" y="110" width="45"  height="90"/>
+        <rect x="455" y="88"  width="16"  height="24"/>
+        <rect x="485" y="130" width="55"  height="70"/>
+        <rect x="503" y="108" width="18"  height="24"/>
+        <rect x="540" y="70"  width="65"  height="130"/>
+        <rect x="558" y="44"  width="28"  height="28"/>
+        <rect x="568" y="26"  width="8"   height="20"/>
+        <!-- windows mid -->
+        <rect x="365" y="75"  width="7"   height="6"  fill="#ffe06633"/>
+        <rect x="377" y="75"  width="7"   height="6"  fill="#ffe06644"/>
+        <rect x="389" y="75"  width="7"   height="6"  fill="#ffe06622"/>
+        <rect x="365" y="88"  width="7"   height="6"  fill="#ffe06655"/>
+        <rect x="389" y="88"  width="7"   height="6"  fill="#ffe06633"/>
+        <rect x="365" y="101" width="7"   height="6"  fill="#ffe06622"/>
+        <rect x="377" y="101" width="7"   height="6"  fill="#ffe06644"/>
+        <!-- right cluster -->
+        <rect x="605" y="100" width="55"  height="100"/>
+        <rect x="620" y="78"  width="24"  height="24"/>
+        <rect x="660" y="130" width="50"  height="70"/>
+        <rect x="710" y="85"  width="70"  height="115"/>
+        <rect x="728" y="58"  width="32"  height="30"/>
+        <rect x="742" y="38"  width="4"   height="22"/>
+        <rect x="780" y="120" width="45"  height="80"/>
+        <rect x="825" y="95"  width="60"  height="105"/>
+        <rect x="843" y="70"  width="22"  height="28"/>
+        <rect x="885" y="135" width="40"  height="65"/>
+        <rect x="925" y="75"  width="75"  height="125"/>
+        <rect x="946" y="48"  width="30"  height="30"/>
+        <rect x="958" y="28"  width="6"   height="22"/>
+        <rect x="1000" y="115" width="50" height="85"/>
+        <!-- far right -->
+        <rect x="1050" y="90"  width="65" height="110"/>
+        <rect x="1072" y="62"  width="20" height="30"/>
+        <rect x="1115" y="125" width="45" height="75"/>
+        <rect x="1160" y="80"  width="70" height="120"/>
+        <rect x="1180" y="55"  width="28" height="28"/>
+        <rect x="1192" y="36"  width="4"  height="21"/>
+        <rect x="1230" y="110" width="55" height="90"/>
+        <rect x="1285" y="95"  width="60" height="105"/>
+        <rect x="1303" y="68"  width="22" height="29"/>
+        <rect x="1345" y="120" width="50" height="80"/>
+        <rect x="1390" y="85"  width="55" height="115"/>
+        <!-- ground -->
+        <rect x="0" y="195" width="1440" height="5"/>
+      </g>
+      <!-- tiny window lights -->
+      <g fill="#ffe06640">
+        <rect x="715" y="95"  width="7" height="6"/>
+        <rect x="727" y="95"  width="7" height="6"/>
+        <rect x="739" y="95"  width="7" height="6"/>
+        <rect x="715" y="108" width="7" height="6"/>
+        <rect x="739" y="108" width="7" height="6"/>
+        <rect x="715" y="121" width="7" height="6"/>
+        <rect x="727" y="121" width="7" height="6"/>
+        <rect x="930" y="88"  width="7" height="6"/>
+        <rect x="944" y="88"  width="7" height="6"/>
+        <rect x="958" y="88"  width="7" height="6"/>
+        <rect x="930" y="102" width="7" height="6"/>
+        <rect x="958" y="102" width="7" height="6"/>
+        <rect x="1165" y="94" width="7" height="6"/>
+        <rect x="1178" y="94" width="7" height="6"/>
+        <rect x="1165" y="107" width="7" height="6"/>
+        <rect x="1178" y="107" width="7" height="6"/>
+        <rect x="1191" y="107" width="7" height="6"/>
+      </g>
+    </svg>
+  </div>
+
+  <script>
+    // ===== GENERATE STAR DOTS =====
+    const starsBg = document.getElementById('starsBg');
+    const starCount = 140;
+    for (let i = 0; i < starCount; i++) {
+      const s = document.createElement('div');
+      s.className = 'star-dot';
+      const size = Math.random() * 3 + 1;
+      s.style.cssText = `
+        left: ${Math.random() * 100}%;
+        top: ${Math.random() * 72}%;
+        width: ${size}px;
+        height: ${size}px;
+        --dur: ${(Math.random() * 3 + 1.5).toFixed(2)}s;
+        --delay: ${(Math.random() * 4).toFixed(2)}s;
+        opacity: ${Math.random()};
+      `;
+      starsBg.appendChild(s);
+    }
+
+    // ===== GENERATE SPARKLES =====
+    const trail = document.getElementById('sparkleTrail');
+    const colors = ['#ffe000','#ffaa00','#ff6600','#ffffff','#ffe080','#ffcc44'];
+    const sparkleCount = 14;
+    for (let i = 0; i < sparkleCount; i++) {
+      const sp = document.createElement('div');
+      sp.className = 'sparkle';
+      const size = Math.random() * 14 + 6;
+      sp.style.cssText = `
+        left: ${Math.random() * 200}px;
+        top: ${Math.random() * 70}px;
+        --size: ${size}px;
+        --color: ${colors[Math.floor(Math.random() * colors.length)]};
+        --dur: ${(Math.random() * 0.6 + 0.5).toFixed(2)}s;
+        --delay: ${(Math.random() * 0.8).toFixed(2)}s;
+      `;
+      trail.appendChild(sp);
+    }
+  </script>
+</body>
+</html>
