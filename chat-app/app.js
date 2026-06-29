@@ -284,6 +284,10 @@ async function sendMessage() {
   const text = messageInput.value.trim();
   if (!text || isStreaming) return;
 
+  // Send button pop animation
+  sendBtn.classList.add('sending');
+  sendBtn.addEventListener('animationend', () => sendBtn.classList.remove('sending'), { once: true });
+
   // Create session if needed
   if (!activeSessionId || !sessions[activeSessionId]) {
     const id = createSession();
