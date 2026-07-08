@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مجيب — المساعد الذكي المحلي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== WELCOME SCREEN ===== -->
+  <div class="welcome-screen" id="welcome-screen">
+    <canvas id="matrix-canvas"></canvas>
+    <div class="welcome-content">
+      <div class="logo-glow">
+        <div class="logo-ring"></div>
+        <div class="logo-ring ring2"></div>
+        <div class="logo-text">م</div>
+      </div>
+      <h1 class="app-title">مجيب</h1>
+      <p class="app-subtitle">مساعدك الذكي المحلي · يعمل على جهازك بالكامل</p>
+      <div class="feature-pills">
+        <span class="pill">📄 رفع المراجع</span>
+        <span class="pill">🔒 خصوصية تامة</span>
+        <span class="pill">⚡ سريع ومحلي</span>
+      </div>
+      <button class="btn-start" id="btn-start" onclick="enterApp()">
+        <span>ابدأ المحادثة</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </button>
+      <p class="powered-by">مدعوم بـ <strong>Ollama</strong> · يعمل محلياً على جهازك</p>
+    </div>
+  </div>
+
+  <!-- ===== MAIN APP ===== -->
+  <div class="app" id="main-app" style="display:none">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <span class="brand-icon">م</span>
+          <span class="brand-name">مجيب</span>
+        </div>
+        <button class="btn-icon-sm" id="sidebar-toggle-btn" title="إخفاء الشريط الجانبي" onclick="toggleSidebar()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- New Chat -->
+      <button class="btn-new-chat" onclick="newChat()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        محادثة جديدة
+      </button>
+
+      <!-- References Section -->
+      <div class="section-label">المراجع</div>
+      <div class="refs-area" id="refs-area">
+        <div class="ref-empty" id="ref-empty">لا توجد مراجع مضافة</div>
+      </div>
+      <button class="btn-add-ref" onclick="openRefModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        إضافة مرجع
+      </button>
+
+      <!-- Sessions -->
+      <div class="section-label" style="margin-top:20px">المحادثات</div>
+      <div class="sessions-list" id="sessions-list">
+        <div class="sessions-empty">لا توجد محادثات</div>
+      </div>
+    </aside>
+
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <button class="btn-icon-sm mobile-only" onclick="toggleSidebar()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <span class="topbar-title" id="topbar-title">مجيب</span>
+        <div class="topbar-right">
+          <div class="ref-badge" id="ref-badge" style="display:none">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <span id="ref-count">0</span> مرجع
+          </div>
+          <select class="model-selector" id="model-select" title="اختر النموذج">
+            <option value="llama3.2">llama3.2</option>
+            <option value="llama3.1">llama3.1</option>
+            <option value="llama3">llama3</option>
+            <option value="mistral">mistral</option>
+            <option value="gemma2">gemma2</option>
+            <option value="phi3">phi3</option>
+            <option value="deepseek-r1">deepseek-r1</option>
+            <option value="qwen2.5">qwen2.5</option>
+            <option value="codellama">codellama</option>
+            <option value="arabic-llm">arabic-llm</option>
+          </select>
+          <button class="btn-icon-sm" title="تصدير المحادثة" onclick="exportChat()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="chat-area" id="chat-area"></div>
+
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea
+            id="message-input"
+            placeholder="اكتب سؤالك هنا… (Shift+Enter لسطر جديد)"
+            rows="1"
+            autocomplete="off"
+            spellcheck="true"
+          ></textarea>
+          <button class="btn-send" id="send-btn" title="إرسال (Enter)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+          <button class="btn-stop" id="stop-btn" title="إيقاف" style="display:none">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="4" y="4" width="16" height="16" rx="2"/>
+            </svg>
+          </button>
+        </div>
+        <div class="input-hint">مجيب يعمل محلياً · بياناتك لا تغادر جهازك</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===== ADD REFERENCE MODAL ===== -->
+  <div class="modal-overlay" id="ref-modal" style="display:none" onclick="closeRefModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2>إضافة مرجع</h2>
+        <button class="btn-close" onclick="closeRefModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">أضف مرجعاً نصياً ليستخدمه مجيب للإجابة على أسئلتك بدقة أكبر.</p>
+
+        <!-- Tabs -->
+        <div class="modal-tabs">
+          <button class="tab active" onclick="switchTab('text', this)">نص مباشر</button>
+          <button class="tab" onclick="switchTab('file', this)">رفع ملف</button>
+        </div>
+
+        <!-- Text Tab -->
+        <div id="tab-text">
+          <input type="text" class="ref-title-input" id="ref-title" placeholder="اسم المرجع (مثل: كتاب الفقه)" />
+          <textarea class="ref-content-input" id="ref-content" placeholder="الصق هنا محتوى المرجع…" rows="10"></textarea>
+        </div>
+
+        <!-- File Tab -->
+        <div id="tab-file" style="display:none">
+          <input type="text" class="ref-title-input" id="ref-title-file" placeholder="اسم المرجع" />
+          <div class="file-drop-zone" id="file-drop-zone" onclick="document.getElementById('file-input').click()">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            <p>اسحب ملفاً هنا أو <span class="link">اضغط للاختيار</span></p>
+            <p class="file-hint">يدعم: .txt · .md · .csv · .json</p>
+          </div>
+          <input type="file" id="file-input" accept=".txt,.md,.csv,.json" style="display:none" onchange="handleFileSelect(event)" />
+          <div id="file-preview" class="file-preview" style="display:none"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeRefModal()">إلغاء</button>
+        <button class="btn-add" onclick="addReference()">إضافة المرجع</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
